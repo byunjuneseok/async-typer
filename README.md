@@ -2,6 +2,7 @@
 
 `async-typer` is a _simple async wrapper_ for the [typer](https://github.com/tiangolo/typer) library. 
 We already have a lot of async implementations for our applications, but we can't use them easily with typer.
+With this simple wrapper, we can use async functions in CLI with typer-like interface.
 And `async-typer` have more features than typer to solve our real-world problems in a more elegant way.
 
 ## Installation
