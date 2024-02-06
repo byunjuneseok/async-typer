@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "async-typer"
-version = "0.1.3"
+version = "0.1.5"
 description = ""
 authors = ["byunjuneseok <byunjuneseok@gmail.com>"]
 readme = "README.md"
