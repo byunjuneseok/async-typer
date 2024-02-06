@@ -29,7 +29,9 @@ async def bar():
 
 ## FastAPI-like event handlers
 
+Handle startup and shutdown events with async or sync functions.
+
 ```python
-    app.add_event_handler("startup", redis_async_pool_manager.init_redis_pool)
-    app.add_event_handler("shutdown", redis_async_pool_manager.close_redis_pool)
+app.add_event_handler("startup", redis_async_pool_manager.init_redis_pool)
+app.add_event_handler("shutdown", redis_async_pool_manager.close_redis_pool)
 ```
