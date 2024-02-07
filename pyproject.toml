@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "async-typer"
 version = "0.1.8"
-description = ""
+description = "A simple async wrapper for typer"
 authors = ["byunjuneseok <byunjuneseok@gmail.com>"]
 readme = "README.md"
 
