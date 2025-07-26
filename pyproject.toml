@@ -4,10 +4,26 @@ version = "0.1.9"
 description = "A simple async wrapper for typer"
 authors = ["byunjuneseok <byunjuneseok@gmail.com>"]
 readme = "README.md"
+classifiers = [ 
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 typer = ">=0.9.0,<1.0.0"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/byunjuneseok/async-typer/issues"
+"homepage" = "https://github.com/byunjuneseok/async-typer"
+"repository" = "https://github.com/byunjuneseok/async-typer"
 
 
 [build-system]
