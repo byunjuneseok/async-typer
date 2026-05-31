@@ -83,7 +83,7 @@ class AsyncTyper(typer.Typer):
 
         def decorator(func: _AnyCallable) -> _AnyCallable:
             if inspect.iscoroutinefunction(func):
-                parent_callback(self._wrap_async(func))
+                parent_callback(self._wrap_async_bare(func))
             else:
                 parent_callback(func)
             return func
@@ -162,6 +162,25 @@ class AsyncTyper(typer.Typer):
                     return runner.run(async_func(*args, **kwargs))
                 finally:
                     self._run_shutdown_handlers(runner)
+
+        return sync_wrapper
+
+    def _wrap_async_bare(self, async_func: _AnyCallable) -> _AnyCallable:
+        """Wrap an async *callback* so Typer can call it synchronously.
+
+        Unlike :meth:`_wrap_async`, this does **not** run lifecycle event
+        handlers. Handlers are scoped to the command body — the documented
+        contract is that ``startup`` resources are created for the command —
+        so firing them around the callback as well would run every handler
+        twice (and on a different event loop) whenever both the callback and
+        the command are ``async``. The callback's coroutine simply runs to
+        completion on its own :class:`asyncio.Runner`.
+        """
+
+        @functools.wraps(async_func)
+        def sync_wrapper(*args: Any, **kwargs: Any) -> Any:
+            with asyncio.Runner() as runner:
+                return runner.run(async_func(*args, **kwargs))
 
         return sync_wrapper
 

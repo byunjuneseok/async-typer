@@ -128,6 +128,42 @@ def test_sync_callback_still_works() -> None:
 # --- event handlers ----------------------------------------------------------
 
 
+def test_event_handlers_fire_once_with_async_callback() -> None:
+    """Lifecycle handlers are command-scoped: an async callback must not
+    cause them to fire a second time.
+
+    Regression for the 0.2.0 behavior where ``command()`` and ``callback()``
+    each wrapped their callable with its own lifecycle, so an async callback
+    plus an async command ran startup/shutdown twice on two different loops.
+    """
+    app = AsyncTyper()
+    events: list[str] = []
+
+    async def startup() -> None:
+        events.append("startup")
+
+    async def shutdown() -> None:
+        events.append("shutdown")
+
+    app.add_event_handler("startup", startup)
+    app.add_event_handler("shutdown", shutdown)
+
+    @app.callback()
+    async def main() -> None:
+        events.append("callback")
+
+    @app.command()
+    async def cmd() -> None:
+        events.append("command")
+
+    result = runner.invoke(app, ["cmd"])
+    assert result.exit_code == 0, result.output
+    assert events.count("startup") == 1
+    assert events.count("shutdown") == 1
+    # Handlers are scoped to the command; the callback runs before them.
+    assert events == ["callback", "startup", "command", "shutdown"]
+
+
 def test_event_handlers_fire_in_registration_order() -> None:
     app = AsyncTyper()
     events: list[str] = []
