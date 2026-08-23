@@ -10,9 +10,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Annotated
 
-import click
 import pytest
 import typer
+
+try:
+    import click  # ty: ignore[unresolved-import]
+except ImportError:
+    # from typer version 0.26.0 click is no longer a dependency, but included in typer
+    import typer._click as click
 from typer.testing import CliRunner
 
 from async_typer import AsyncTyper
