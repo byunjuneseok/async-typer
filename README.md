@@ -18,7 +18,8 @@ event handlers for setting up and tearing down async resources.
 - **Fully typed** — ships with a `py.typed` marker and strict type hints.
 - **Drop-in replacement** — re-exports Typer's public API, so
   `from async_typer import Option, Argument, echo, ...` works without a
-  second import line.
+  second import line. A test asserts the re-export list matches the targeted
+  typer release exactly, so it cannot silently drift.
 
 ## Installation
 
@@ -29,6 +30,24 @@ uv add async-typer
 ```
 
 Requires Python 3.11+.
+
+## Versioning
+
+async-typer's version **is** the typer version it targets. `async-typer 0.27.2`
+is built and tested against `typer 0.27.2`, and its dependency range is pinned
+to that minor series (`typer>=0.27.2,<0.28.0`). To find the right release, look
+up the typer version you are on:
+
+| typer  | async-typer |
+| ------ | ----------- |
+| 0.27.x | 0.27.x      |
+
+When async-typer needs a release of its own without a matching typer release, a
+fourth segment is appended — `0.27.2.1`, `0.27.2.2` — which still targets
+typer 0.27.2 and sorts between `0.27.2` and `0.27.3`.
+
+Releases before `0.27.2` (`0.1.x`, `0.2.x`) predate this policy and carry a
+wide `typer>=0.9.0,<1.0.0` range instead.
 
 ## Quick start
 
@@ -95,6 +114,18 @@ async def fetch(url: str) -> None:
 
 The shutdown handler runs even if the command raises — use it to release
 resources unconditionally.
+
+## Migrating from 0.2.x
+
+`0.27.2` is not a huge leap in scope — it is the first release under the
+[version policy above](#versioning). Two things changed alongside it:
+
+- typer is now pinned to the `0.27.x` series.
+- `TyperException`, added in typer `0.27.2`, is now re-exported.
+- Six symbols typer dropped in `0.26.0` are no longer re-exported: `clear`,
+  `echo_via_pager`, `edit`, `open_file`, `pause`, and `unstyle`. They are click
+  helpers, and typer no longer depends on click — add `click` to your own
+  dependencies and import them from there.
 
 ## Migrating from 0.1.x
 

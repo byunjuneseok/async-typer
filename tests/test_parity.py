@@ -7,6 +7,10 @@ pass-through.
 
 from __future__ import annotations
 
+import functools
+import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -20,6 +24,7 @@ except ImportError:
     import typer._click as click
 from typer.testing import CliRunner
 
+import async_typer
 from async_typer import AsyncTyper
 
 runner = CliRunner()
@@ -230,3 +235,67 @@ def test_annotated_forward_ref_with_future_annotations(
     run_result = runner.invoke(app, ["--p", "/tmp"])
     assert run_result.exit_code == 0, run_result.output
     assert isinstance(captured["p"], Path)
+
+
+# --- re-export surface --------------------------------------------------------
+#
+# async-typer advertises itself as a drop-in replacement for typer, and its
+# version mirrors the typer release it targets, so the set of names it
+# re-exports has to track that release exactly. Letting it drift is what made
+# typer 0.26.0 break `import async_typer` outright.
+
+#: Public typer attributes that are deliberately *not* re-exported: internal
+#: implementation modules that typer does not document as part of its API.
+#: ``colors`` and ``completion`` are modules too, but they are documented, so
+#: they stay in the re-export list.
+NOT_REEXPORTED = frozenset({"core", "exceptions", "main", "models", "params", "utils"})
+
+_PROBE = "import json, typer; print(json.dumps([n for n in dir(typer) if n[0] != '_']))"
+
+
+@functools.cache
+def _typer_public_names() -> frozenset[str]:
+    """typer's public surface as seen by a fresh interpreter.
+
+    Read in a subprocess on purpose: ``dir(typer)`` grows in-process as
+    submodules get imported (``typer.testing`` by this very module, and
+    ``typer.rich_utils`` once a command renders help), which would make the
+    surface depend on test ordering.
+    """
+    probe = subprocess.run(
+        [sys.executable, "-c", _PROBE],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return frozenset(json.loads(probe.stdout))
+
+
+def _async_typer_reexports() -> set[str]:
+    own = {"AsyncTyper", "EventHandler", "EventType", "__version__"}
+    return set(async_typer.__all__) - own
+
+
+def test_every_reexport_still_exists_in_typer() -> None:
+    missing = sorted(_async_typer_reexports() - _typer_public_names())
+    assert not missing, (
+        f"async_typer re-exports {missing}, which typer {typer.__version__} no longer "
+        "provides — importing async_typer will fail"
+    )
+
+
+def test_no_public_typer_name_is_left_behind() -> None:
+    left_behind = sorted(_typer_public_names() - _async_typer_reexports() - NOT_REEXPORTED)
+    assert not left_behind, (
+        f"typer {typer.__version__} exposes {left_behind}, which async_typer does not "
+        "re-export — add them to __all__ or to NOT_REEXPORTED"
+    )
+
+
+def test_reexports_are_the_same_objects_as_typer_s() -> None:
+    aliased = sorted(
+        name
+        for name in _async_typer_reexports()
+        if getattr(async_typer, name) is not getattr(typer, name)
+    )
+    assert not aliased, f"async_typer rebinds {aliased} instead of re-exporting typer's object"
