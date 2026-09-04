@@ -18,7 +18,8 @@ event handlers for setting up and tearing down async resources.
 - **Fully typed** — ships with a `py.typed` marker and strict type hints.
 - **Drop-in replacement** — re-exports Typer's public API, so
   `from async_typer import Option, Argument, echo, ...` works without a
-  second import line.
+  second import line. A test asserts the re-export list matches the targeted
+  typer release exactly, so it cannot silently drift.
 
 ## Installation
 
@@ -120,6 +121,7 @@ resources unconditionally.
 [version policy above](#versioning). Two things changed alongside it:
 
 - typer is now pinned to the `0.27.x` series.
+- `TyperException`, added in typer `0.27.2`, is now re-exported.
 - Six symbols typer dropped in `0.26.0` are no longer re-exported: `clear`,
   `echo_via_pager`, `edit`, `open_file`, `pause`, and `unstyle`. They are click
   helpers, and typer no longer depends on click — add `click` to your own
