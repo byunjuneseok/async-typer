@@ -7,11 +7,16 @@ on:
 
 jobs:
   test:
+    name: py${{ matrix.python-version }} / typer ${{ matrix.typer-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
+        # async-typer mirrors the typer version it targets, so this axis lists
+        # every typer release the current version claims to support. Keep it in
+        # sync with the `typer` constraint in pyproject.toml.
+        typer-version: ["0.27.2"]
     steps:
       - uses: actions/checkout@v6
 
@@ -26,11 +31,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --dev
 
+      - name: Pin typer ${{ matrix.typer-version }}
+        run: uv pip install "typer==${{ matrix.typer-version }}"
+
       - name: Lint
-        run: uv run ruff check .
+        run: uv run --no-sync ruff check .
 
       - name: Type check
-        run: uv run ty check
+        run: uv run --no-sync ty check
 
       - name: Test
-        run: uv run pytest
+        run: uv run --no-sync pytest

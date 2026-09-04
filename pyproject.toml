@@ -1,6 +1,6 @@
 [project]
 name = "async-typer"
-version = "0.2.1"
+version = "0.27.2"
 description = "Typer with first-class async support: unified sync/async commands, callbacks, and lifecycle event handlers."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -26,7 +26,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "typer>=0.9.0,<1.0.0",
+    "typer>=0.27.2,<0.28.0",
 ]
 
 [project.urls]
